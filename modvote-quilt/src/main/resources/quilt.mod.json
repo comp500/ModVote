@@ -1,0 +1,35 @@
+{
+	"schema_version": 1,
+	"quilt_loader": {
+		"group": "link.infra",
+		"id": "modvote",
+		"version": "${version}",
+		"metadata": {
+			"name": "Mod Vote",
+			"description": "Bringing the Voting Experience to your favourite mods!",
+			"contributors": {
+				"comp500": "Owner"
+			},
+			"contact": {
+				"issues": "https://github.com/comp500/modvote/issues",
+				"sources": "https://github.com/comp500/modvote"
+			},
+			"icon": "assets/modvote/icon.png"
+		},
+		"intermediate_mappings": "net.fabricmc:intermediary",
+		"entrypoints": {
+			"pre_launch": "link.infra.modvote.ModVote"
+		},
+		"depends": [
+			{
+				"id": "quilt_loader",
+				"versions": ">=0.18.7-"
+			},
+			{
+				"id": "minecraft",
+				"versions": "=1.20-alpha.23.13.ab"
+			}
+		]
+	},
+	"mixin": "modvote.mixins.json"
+}
