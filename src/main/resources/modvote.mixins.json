@@ -3,9 +3,13 @@
 	"minVersion": "0.8",
 	"package": "link.infra.modvote.mixin",
 	"compatibilityLevel": "JAVA_17",
-	"mixins": [],
+	"mixins": [
+		"MinecraftServerMixin",
+		"RulesAccessor",
+		"RulesMixin"
+	],
 	"client": [
-		"TitleScreenMixin"
+		"MinecraftClientMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -15,4 +15,11 @@ public class ModVote implements PreLaunchEntrypoint {
 		}
 		LOGGER.info("Successfully battled quilt loader demons, mod vote is alive!");
 	}
+
+	public static void queueGameRestart() {
+		// Need to start a new thread, because mojang's shutdown hook blocks waiting for the server thread to clean up
+		new Thread(() -> {
+			System.exit(1337);
+		}).start();
+	}
 }

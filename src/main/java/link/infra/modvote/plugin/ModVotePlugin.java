@@ -4,8 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.quiltmc.loader.api.LoaderValue;
 import org.quiltmc.loader.api.QuiltLoader;
+import org.quiltmc.loader.api.plugin.ModLocation;
 import org.quiltmc.loader.api.plugin.QuiltLoaderPlugin;
 import org.quiltmc.loader.api.plugin.QuiltPluginContext;
+import org.quiltmc.loader.api.plugin.gui.PluginGuiTreeNode;
+import org.quiltmc.loader.api.plugin.solver.LoadOption;
+import org.quiltmc.loader.api.plugin.solver.ModLoadOption;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -134,6 +138,7 @@ public class ModVotePlugin implements QuiltLoaderPlugin {
 		try {
 			Files.createDirectories(submods);
 			context.addFolderToScan(submods);
+			// TODO: enable/disable mods
 			LOGGER.info("hehe :3");
 			System.setProperty("modvote.active", "true");
 		} catch (IOException e) {
