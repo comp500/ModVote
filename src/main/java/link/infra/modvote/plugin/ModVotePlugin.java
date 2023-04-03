@@ -134,9 +134,8 @@ public class ModVotePlugin implements QuiltLoaderPlugin {
 			parentExitWatchdog(parentProcess.get());
 		}
 
-		Path submods = QuiltLoader.getGameDir().resolve("modvotemods");
 		try {
-			Files.createDirectories(submods);
+			Files.createDirectories(ModScanner.modsRoot);
 		} catch (IOException e) {
 			LOGGER.warn("Failed to set up modvotemods folder", e);
 			return;
