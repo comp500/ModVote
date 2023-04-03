@@ -1,3 +1,4 @@
 {
-	"rule.modvote.add": "Add %d"
+	"rule.modvote.add": "Add %d",
+	"boss.modvote.reloading": "Mod Vote enacted! Reloading mods in %d seconds..."
 }

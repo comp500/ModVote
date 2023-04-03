@@ -9,6 +9,8 @@
 		"RulesMixin"
 	],
 	"client": [
+		"BossHealthOverlayAccessor",
+		"GuiAccessor",
 		"MinecraftClientMixin"
 	],
 	"injectors": {

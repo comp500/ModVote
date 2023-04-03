@@ -63,6 +63,7 @@ public class VotedModsRule implements Rule {
 
 		@Override
 		public void update(RuleAction ruleAction) {
+			// TODO: fix this being called erroneously - check rules in world tick, rather than here!
 			RulesManager.INSTANCE.queueModUpdate(id, ruleAction == RuleAction.APPROVE);
 		}
 	}
