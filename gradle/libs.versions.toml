@@ -2,7 +2,7 @@
 # The latest versions are available at https://lambdaurora.dev/tools/import_quilt.html
 minecraft = "23w13a_or_b"
 #quilt_mappings = "1.19.3+build.26"
-quilt_loader = "0.19.0-beta.6"
+quilt_loader = "0.19.0-beta.7"
 
 #quilted_fabric_api = "5.0.0-beta.8+0.75.1-1.19.3"
 

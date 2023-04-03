@@ -152,7 +152,7 @@ public class ModVotePlugin implements QuiltLoaderPlugin {
 		PluginGuiTreeNode folderNode = context.manager().getRootGuiNode().addChild(QuiltLoaderText.of("Voted mods"));
 		for (ModScanner.Result mod : scannedMods) {
 			if (enabledModIds.contains(mod.id())) {
-				context.addFileToScan(mod.path(), folderNode.addChild(QuiltLoaderText.of(mod.path().getFileName().toString())));
+				context.addFileToScan(mod.path(), folderNode.addChild(QuiltLoaderText.of(mod.path().getFileName().toString())), true);
 			}
 		}
 		LOGGER.info("hehe :3");
