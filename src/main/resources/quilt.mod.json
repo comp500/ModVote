@@ -34,6 +34,6 @@
 	"mixin": "modvote.mixins.json",
 	"experimental_quilt_loader_plugin": {
 		"class": "link.infra.modvote.plugin.ModVotePlugin",
-		"packages": ["link.infra.modvote.plugin"]
+		"packages": ["link.infra.modvote.plugin", "link.infra.modvote.scan", "link.infra.modvote.data"]
 	}
 }

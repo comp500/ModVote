@@ -1,7 +1,6 @@
 package link.infra.modvote.plugin;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import link.infra.modvote.rules.RulesManager;
 import link.infra.modvote.scan.ModScanner;
@@ -29,14 +28,15 @@ public class VotedModsRule implements Rule {
 	@Override
 	public Stream<RuleChange> approvedChanges() {
 		return RulesManager.INSTANCE.scannedMods.stream()
-			.filter(ModScanner.ModScanResult::enabled)
+			// Use pending data, since this list is used before saving the rules
+			.filter(r -> RulesManager.INSTANCE.pendingOrLoaded(r.id()))
 			.map(r -> new Mod(r.id(), r.name()));
 	}
 
 	@Override
 	public Stream<RuleChange> randomApprovableChanges(MinecraftServer minecraftServer, RandomSource randomSource, int i) {
 		List<RuleChange> changes = RulesManager.INSTANCE.scannedMods.stream()
-			.filter(ModScanner.ModScanResult::disabled)
+			.filter(ModScanner.Result::unloaded)
 			.map(r -> new Mod(r.id(), r.name())).collect(Collectors.toList());
 		Util.shuffle(changes, randomSource);
 		return changes.stream().limit(i);

@@ -1,15 +1,15 @@
 package link.infra.modvote.plugin;
 
+import link.infra.modvote.data.ConfigHandler;
+import link.infra.modvote.scan.ModScanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.quiltmc.loader.api.LoaderValue;
 import org.quiltmc.loader.api.QuiltLoader;
-import org.quiltmc.loader.api.plugin.ModLocation;
+import org.quiltmc.loader.api.gui.QuiltLoaderText;
 import org.quiltmc.loader.api.plugin.QuiltLoaderPlugin;
 import org.quiltmc.loader.api.plugin.QuiltPluginContext;
 import org.quiltmc.loader.api.plugin.gui.PluginGuiTreeNode;
-import org.quiltmc.loader.api.plugin.solver.LoadOption;
-import org.quiltmc.loader.api.plugin.solver.ModLoadOption;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -134,16 +134,30 @@ public class ModVotePlugin implements QuiltLoaderPlugin {
 			parentExitWatchdog(parentProcess.get());
 		}
 
-		Path submods = Paths.get("modvotemods");
+		Path submods = QuiltLoader.getGameDir().resolve("modvotemods");
 		try {
 			Files.createDirectories(submods);
-			context.addFolderToScan(submods);
-			// TODO: enable/disable mods
-			LOGGER.info("hehe :3");
-			System.setProperty("modvote.active", "true");
 		} catch (IOException e) {
 			LOGGER.warn("Failed to set up modvotemods folder", e);
+			return;
 		}
+		List<ModScanner.Result> scannedMods = ModScanner.scan();
+		HashSet<String> enabledModIds;
+		try {
+			enabledModIds = ConfigHandler.read();
+		} catch (IOException e) {
+			LOGGER.warn("Failed to read config (ignore this on first run)", e);
+			System.setProperty("modvote.active", "true");
+			return;
+		}
+		PluginGuiTreeNode folderNode = context.manager().getRootGuiNode().addChild(QuiltLoaderText.of("Voted mods"));
+		for (ModScanner.Result mod : scannedMods) {
+			if (enabledModIds.contains(mod.id())) {
+				context.addFileToScan(mod.path(), folderNode.addChild(QuiltLoaderText.of(mod.path().getFileName().toString())));
+			}
+		}
+		LOGGER.info("hehe :3");
+		System.setProperty("modvote.active", "true");
 	}
 
 	@Override
