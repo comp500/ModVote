@@ -2,7 +2,6 @@ package link.infra.modvote.mixin;
 
 import com.mojang.datafixers.DataFixer;
 import link.infra.modvote.GracefulTerminator;
-import link.infra.modvote.rules.RulesManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
@@ -18,11 +17,6 @@ import java.net.Proxy;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
-	@Inject(method = "tickChildren", at = @At("HEAD"))
-	public void modvote$onTick(CallbackInfo ci) {
-		RulesManager.INSTANCE.tick();
-	}
-
 	@Inject(method = "<init>", at = @At("TAIL"))
 	public void modvote$onInit(Thread thread, LevelStorageSource.LevelStorageAccess levelStorageAccess, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer dataFixer, Services services, ChunkProgressListenerFactory chunkProgressListenerFactory, CallbackInfo ci) {
 		GracefulTerminator.addServer((MinecraftServer)(Object)this);

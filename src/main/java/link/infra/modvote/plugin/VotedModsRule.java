@@ -2,8 +2,8 @@ package link.infra.modvote.plugin;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import link.infra.modvote.ModVote;
 import link.infra.modvote.rules.RulesManager;
-import link.infra.modvote.scan.ModScanner;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -12,11 +12,19 @@ import net.minecraft.voting.rules.Rule;
 import net.minecraft.voting.rules.RuleAction;
 import net.minecraft.voting.rules.RuleChange;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class VotedModsRule implements Rule {
+	// Always empty on start - server will sync/load changes, then both sides will update their mod lists to match
+	// with a janky artificial delay to ensure all mod updates are done at once
+	// (on disconnect/reconnect, rulechanges are repealed, so this should always be correct)
+	private final Set<Mod> approvedMods = new HashSet<>();
+
 	@Override
 	public Codec<RuleChange> codec() {
 		return Rule.<Mod>puntCodec(RecordCodecBuilder.create(instance -> instance.group(
@@ -27,19 +35,21 @@ public class VotedModsRule implements Rule {
 
 	@Override
 	public Stream<RuleChange> approvedChanges() {
-		return RulesManager.INSTANCE.scannedMods.stream()
-			// Use pending data, since this list is used before saving the rules
-			.filter(r -> RulesManager.INSTANCE.pendingOrLoaded(r.id()))
-			.map(r -> new Mod(r.id(), r.name()));
+		// Use pending data, since this list is used to save the rules
+		return approvedMods.stream().map(r -> r);
 	}
 
 	@Override
 	public Stream<RuleChange> randomApprovableChanges(MinecraftServer minecraftServer, RandomSource randomSource, int i) {
 		List<RuleChange> changes = RulesManager.INSTANCE.scannedMods.stream()
-			.filter(ModScanner.Result::unloaded)
-			.map(r -> new Mod(r.id(), r.name())).collect(Collectors.toList());
+			.map(r -> new Mod(r.id(), r.name()))
+			.filter(m -> !approvedMods.contains(m)).collect(Collectors.toList());
 		Util.shuffle(changes, randomSource);
 		return changes.stream().limit(i);
+	}
+
+	public Set<String> getApprovedModIds() {
+		return approvedMods.stream().map(m -> m.id).collect(Collectors.toUnmodifiableSet());
 	}
 
 	public class Mod implements RuleChange.Simple {
@@ -63,8 +73,33 @@ public class VotedModsRule implements Rule {
 
 		@Override
 		public void update(RuleAction ruleAction) {
-			// TODO: fix this being called erroneously - check rules in world tick, rather than here!
-			RulesManager.INSTANCE.queueModUpdate(id, ruleAction == RuleAction.APPROVE);
+			boolean idIsAvailable = RulesManager.INSTANCE.scannedMods.stream().anyMatch(mod -> mod.id().equals(id));
+			if (!idIsAvailable) {
+				ModVote.LOGGER.warn("Failed to find voted mod " + id + " (do you have the same mods as the server?)");
+				return;
+			}
+			boolean updated;
+			if (ruleAction == RuleAction.APPROVE) {
+				updated = approvedMods.add(this);
+			} else {
+				updated = approvedMods.remove(this);
+			}
+			if (updated) {
+				RulesManager.INSTANCE.queueModUpdate();
+			}
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			Mod mod = (Mod) o;
+			return id.equals(mod.id) && name.equals(mod.name);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(id, name);
 		}
 	}
 }
