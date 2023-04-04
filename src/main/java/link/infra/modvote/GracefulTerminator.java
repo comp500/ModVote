@@ -16,30 +16,31 @@ public class GracefulTerminator {
 	}
 
 	public static void gracefullyTerminate() {
-		// Try to shutdown all servers before terminating
-		Semaphore terminationSem = new Semaphore(0);
-		int numServersStopping = 0;
-		for (WeakReference<MinecraftServer> ref : servers) {
-			var server = ref.get();
-			if (server != null) {
-				numServersStopping++;
-				try {
-					new Thread(() -> {
-						server.halt(true);
+		// Need to start a new thread, because mojang's shutdown hook blocks waiting for the server thread to clean up
+		// also because we can't block the server thread waiting for the server thread to exit :P
+		new Thread(() -> {
+			// Try to shutdown all servers before terminating
+			Semaphore terminationSem = new Semaphore(0);
+			int numServersStopping = 0;
+			for (WeakReference<MinecraftServer> ref : servers) {
+				var server = ref.get();
+				if (server != null) {
+					numServersStopping++;
+					try {
+						new Thread(() -> {
+							server.halt(true);
+							terminationSem.release();
+						}).start();
+					} catch (Throwable ignored) {
 						terminationSem.release();
-					}).start();
-				} catch (Throwable ignored) {
-					terminationSem.release();
+					}
 				}
 			}
-		}
-		try {
-			terminationSem.tryAcquire(numServersStopping, 5, TimeUnit.SECONDS);
-		} catch (InterruptedException ignored) {
-			// I am inevitable >:)
-		}
-		// Need to start a new thread, because mojang's shutdown hook blocks waiting for the server thread to clean up
-		new Thread(() -> {
+			try {
+				terminationSem.tryAcquire(numServersStopping, 5, TimeUnit.SECONDS);
+			} catch (InterruptedException ignored) {
+				// I am inevitable >:)
+			}
 			System.exit(1337);
 		}).start();
 	}
