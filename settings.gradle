@@ -12,3 +12,5 @@ pluginManagement {
 		gradlePluginPortal()
 	}
 }
+
+System.setProperty("loom.excludeFabricReplacedDependencies", "false")

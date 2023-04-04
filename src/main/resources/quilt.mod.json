@@ -18,7 +18,9 @@
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"pre_launch": "link.infra.modvote.ModVote"
+			"pre_launch": "link.infra.modvote.ModVote",
+			"main": "link.infra.modvote.serversync.ServerSync",
+			"client": "link.infra.modvote.serversync.ServerSync"
 		},
 		"depends": [
 			{

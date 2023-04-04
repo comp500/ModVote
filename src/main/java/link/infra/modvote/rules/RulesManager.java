@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.voting.rules.Rule;
 import net.minecraft.world.level.Level;
+import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
 
 import java.io.IOException;
@@ -49,6 +50,24 @@ public class RulesManager {
 			}
 		} else {
 			tick();
+		}
+	}
+
+	public void clientJoinSync(Set<String> approvedModIds) {
+		// Check that all approved mods are loaded when joining the server
+		// otherwise, a registry sync error could be encountered, stopping the join before the rules had a chance to sync
+		for (String id : approvedModIds) {
+			if (!QuiltLoader.isModLoaded(id)) {
+				// TODO: a nicer dialog/error message?
+				try {
+					ConfigHandler.write(approvedModIds);
+					ModVote.LOGGER.info("Restarting game to apply Mod Vote...");
+					GracefulTerminator.gracefullyTerminate();
+				} catch (IOException e) {
+					ModVote.LOGGER.error("Failed to write configuration", e);
+				}
+				break;
+			}
 		}
 	}
 
