@@ -24,10 +24,10 @@ public class GracefulTerminator {
 			if (server != null) {
 				numServersStopping++;
 				try {
-					server.executeIfPossible(() -> {
-						server.stopServer();
+					new Thread(() -> {
+						server.halt(true);
 						terminationSem.release();
-					});
+					}).start();
 				} catch (Throwable ignored) {
 					terminationSem.release();
 				}

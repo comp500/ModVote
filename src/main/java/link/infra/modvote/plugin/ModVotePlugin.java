@@ -1,12 +1,13 @@
 package link.infra.modvote.plugin;
 
 import link.infra.modvote.data.ConfigHandler;
+import link.infra.modvote.logging.PluginLogHandler;
 import link.infra.modvote.scan.ModScanner;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.fabricmc.api.EnvType;
 import org.quiltmc.loader.api.LoaderValue;
 import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.loader.api.gui.QuiltLoaderText;
+import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
 import org.quiltmc.loader.api.plugin.QuiltLoaderPlugin;
 import org.quiltmc.loader.api.plugin.QuiltPluginContext;
 import org.quiltmc.loader.api.plugin.gui.PluginGuiTreeNode;
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class ModVotePlugin implements QuiltLoaderPlugin {
-	private static final Logger LOGGER = LogManager.getLogger("ModVotePlugin");
+	private static final PluginLogHandler LOGGER = PluginLogHandler.INSTANCE;
 
 	public void parentExitWatchdog(ProcessHandle handle) {
 		Thread t = new Thread(() -> {
@@ -91,11 +92,14 @@ public class ModVotePlugin implements QuiltLoaderPlugin {
 			LOGGER.warn("Failed to create argfile, passing classpath directly");
 			args.add(System.getProperty("java.class.path"));
 		}
-		// TODO: server support?
-		args.add("org.quiltmc.loader.impl.launch.knot.KnotClient");
+		if (MinecraftQuiltLoader.getEnvironmentType() == EnvType.CLIENT) {
+			args.add("org.quiltmc.loader.impl.launch.knot.KnotClient");
+		} else {
+			args.add("org.quiltmc.loader.impl.launch.server.QuiltServerLauncher");
+		}
 		args.addAll(Arrays.asList(mainArgs));
 
-		LogManager.shutdown();
+		LOGGER.shutdown();
 		ProcessBuilder pb = new ProcessBuilder(args);
 		pb.inheritIO();
 		try {
@@ -141,7 +145,7 @@ public class ModVotePlugin implements QuiltLoaderPlugin {
 			return;
 		}
 		List<ModScanner.Result> scannedMods = ModScanner.scan();
-		HashSet<String> enabledModIds;
+		Set<String> enabledModIds;
 		try {
 			enabledModIds = ConfigHandler.read();
 		} catch (IOException e) {

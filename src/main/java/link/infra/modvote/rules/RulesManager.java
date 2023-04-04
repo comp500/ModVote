@@ -8,11 +8,14 @@ import link.infra.modvote.plugin.VotedModsRule;
 import link.infra.modvote.scan.ModScanner;
 import link.infra.modvote.ui.BossEventUpdater;
 import net.fabricmc.api.EnvType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.voting.rules.Rule;
+import net.minecraft.world.level.Level;
 import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
 
 import java.io.IOException;
@@ -37,6 +40,16 @@ public class RulesManager {
 
 	public void queueModUpdate() {
 		ruleUpdateTimer = UPDATE_DELAY;
+	}
+
+	public void levelTick(Level level) {
+		if (!(level instanceof ServerLevel)) {
+			if (!Minecraft.getInstance().isLocalServer()) {
+				tick();
+			}
+		} else {
+			tick();
+		}
 	}
 
 	public void tick() {

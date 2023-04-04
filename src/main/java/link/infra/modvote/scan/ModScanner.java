@@ -1,8 +1,7 @@
 package link.infra.modvote.scan;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import link.infra.modvote.ModVote;
+import link.infra.modvote.logging.PluginLogHandler;
+import org.quiltmc.json5.JsonReader;
 import org.quiltmc.loader.api.QuiltLoader;
 
 import java.io.BufferedReader;
@@ -24,7 +23,7 @@ public class ModScanner {
 		try {
 			return doScan();
 		} catch (IOException e) {
-			ModVote.LOGGER.error("Failed to scan mods", e);
+			PluginLogHandler.INSTANCE.error("Failed to scan mods", e);
 			return List.of();
 		}
 	}
@@ -41,33 +40,65 @@ public class ModScanner {
 					while ((entry = zis.getNextEntry()) != null) {
 						if (entry.getName().equals("fabric.mod.json")) {
 							try (BufferedReader br = new BufferedReader(new InputStreamReader(zis, StandardCharsets.UTF_8))) {
-								JsonObject el = new Gson().fromJson(br, JsonObject.class);
-								modid = el.get("id").getAsString();
-								if (el.has("name")) {
-									name = el.get("name").getAsString();
-								} else {
-									name = modid;
+								JsonReader j = JsonReader.json(br);
+								j.beginObject();
+								while (j.hasNext()) {
+									String key = j.nextName();
+									switch (key) {
+										case "id" -> modid = j.nextString();
+										case "name" -> name = j.nextString();
+										default -> j.skipValue();
+									}
 								}
+								j.endObject();
 							}
 							break;
 						} else if (entry.getName().equals("quilt.mod.json")) {
 							try (BufferedReader br = new BufferedReader(new InputStreamReader(zis, StandardCharsets.UTF_8))) {
-								JsonObject el = new Gson().fromJson(br, JsonObject.class);
-								JsonObject qloader = el.getAsJsonObject("quilt_loader");
-								modid = qloader.get("id").getAsString();
-								if (qloader.has("metadata") && qloader.getAsJsonObject("metadata").has("name")) {
-									name = qloader.getAsJsonObject("metadata").get("name").getAsString();
-								} else {
-									name = modid;
+								JsonReader j = JsonReader.json(br);
+								j.beginObject();
+								while (j.hasNext()) {
+									String key = j.nextName();
+									switch (key) {
+										case "quilt_loader" -> {
+											j.beginObject();
+											while (j.hasNext()) {
+												String qKey = j.nextName();
+												if ("id".equals(qKey)) {
+													modid = j.nextString();
+												} else {
+													j.skipValue();
+												}
+											}
+											j.endObject();
+										}
+										case "metadata" -> {
+											j.beginObject();
+											while (j.hasNext()) {
+												String qKey = j.nextName();
+												if ("name".equals(qKey)) {
+													name = j.nextString();
+												} else {
+													j.skipValue();
+												}
+											}
+											j.endObject();
+										}
+										default -> j.skipValue();
+									}
 								}
+								j.endObject();
 							}
 							break;
 						}
 					}
 				}
 
-				if (modid == null || name == null) {
+				if (modid == null) {
 					throw new RuntimeException("Failed to find mod metadata in jar " + file);
+				}
+				if (name == null) {
+					name = modid;
 				}
 				results.add(new Result(modid, name, file, QuiltLoader.isModLoaded(modid)));
 			}

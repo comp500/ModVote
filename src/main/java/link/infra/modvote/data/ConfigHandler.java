@@ -1,7 +1,7 @@
 package link.infra.modvote.data;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonWriter;
 import org.quiltmc.loader.api.QuiltLoader;
 
 import java.io.BufferedReader;
@@ -15,13 +15,27 @@ import java.util.Set;
 public class ConfigHandler {
 	public static void write(Set<String> enabledModIds) throws IOException {
 		try (BufferedWriter bw = Files.newBufferedWriter(QuiltLoader.getConfigDir().resolve("modvote-loaded.txt"), StandardCharsets.UTF_8)) {
-			new Gson().toJson(enabledModIds, bw);
+			JsonWriter j = JsonWriter.json(bw);
+			j.beginArray();
+			for (String modid : enabledModIds) {
+				j.value(modid);
+			}
+			j.endArray();
+			j.close();
 		}
 	}
 
-	public static HashSet<String> read() throws IOException {
+	public static Set<String> read() throws IOException {
+		Set<String> enabledModIds = new HashSet<>();
 		try (BufferedReader br = Files.newBufferedReader(QuiltLoader.getConfigDir().resolve("modvote-loaded.txt"), StandardCharsets.UTF_8)) {
-			return new Gson().fromJson(br, new TypeToken<>() {});
+			JsonReader j = JsonReader.json(br);
+			j.beginArray();
+			while (j.hasNext()) {
+				enabledModIds.add(j.nextString());
+			}
+			j.endArray();
+			j.close();
 		}
+		return enabledModIds;
 	}
 }
