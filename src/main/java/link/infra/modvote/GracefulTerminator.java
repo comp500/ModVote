@@ -37,7 +37,7 @@ public class GracefulTerminator {
 				}
 			}
 			try {
-				terminationSem.tryAcquire(numServersStopping, 5, TimeUnit.SECONDS);
+				terminationSem.tryAcquire(numServersStopping, 20, TimeUnit.SECONDS);
 			} catch (InterruptedException ignored) {
 				// I am inevitable >:)
 			}
