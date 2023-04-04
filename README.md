@@ -3,4 +3,4 @@ Enjoyed the mob vote? Why not also vote on your favourite mods in the 23w13a_or_
 
 Requires Quilt Loader 0.19.0-beta.7 or newer, and the JVM argument `-Dloader.experimental.allow_loading_plugins=true`.
 
-Currently not functional serverside! Please do not rely on this to work (it uses an experimental API and runs on a joke snapshot!!) and do not cry if all your mods are disabled and all the blocks they added get removed!!
+Please do not rely on this to work (it uses an experimental API and runs on a joke snapshot!!) and do not cry if all your mods are disabled and all the blocks they added get removed!!

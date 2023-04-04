@@ -33,7 +33,7 @@ public class RulesManager {
 	public void registerRules() {
 		Holder.Reference<Rule> reference = Registry.registerForHolder(BuiltInRegistries.RULE,
 			new ResourceLocation("modvote", "addmods"), votedModsRule);
-		RulesAccessor.getBUILDER().add(reference, 10000000); // TODO: make more reasonable
+		RulesAccessor.getBUILDER().add(reference, 20000);
 	}
 
 	private int ruleUpdateTimer = -1;
